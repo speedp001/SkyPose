@@ -1,0 +1,22 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Jupyter and system files
+.ipynb_checkpoints/
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+
+# Data and outputs
+data/
+*.bin
+*.ply
+*.png
+
+# Checkpoints or logs
+*.ckpt
+*.log
