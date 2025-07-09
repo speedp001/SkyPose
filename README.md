@@ -38,6 +38,7 @@ Install the required Python libraries:
 
 ```bash
 pip install -r requirements.txt
+```
 
 ### File Outputs
 
