@@ -1,10 +1,10 @@
-# Skyline-Based Camera Orientation Estimation
+# Skyline-Based large-scale VPS
 
 This project provides a full pipeline for extracting skylines from real-world images, matching them against DEM (Digital Elevation Model)-based 360° skylines, and estimating the optimal viewing direction (azimuth) using NCC-based matching.
 
 ---
 
-## 📂 Modules Overview
+## Modules Overview
 
 ### `DEMProcessor`
 Handles preprocessing of DEM data including:
@@ -32,7 +32,7 @@ Estimates best matching viewing direction (azimuth) by:
 
 ---
 
-## 🛠️ Requirements
+## Requirements
 
 Install the required Python libraries:
 
@@ -40,7 +40,7 @@ Install the required Python libraries:
 pip install -r requirements.txt
 ```
 
-### File Outputs
+## File Outputs
 
 | File                   | Description                                      |
 |------------------------|--------------------------------------------------|
