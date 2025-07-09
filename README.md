@@ -38,3 +38,18 @@ Install the required Python libraries:
 
 ```bash
 pip install -r requirements.txt
+
+### File Outputs
+
+| File                   | Description                                      |
+|------------------------|--------------------------------------------------|
+| `skyline.txt`          | Normalized skyline from image (1D CSV format)    |
+| `skyline_360.txt`      | Normalized 360° skyline from DEM                 |
+| `resampled_DEM.bin`    | Resampled DEM as point cloud (for matching)      |
+| `skyline.png`          | Skyline overlay image extracted from RGB         |
+| `skyline_360_plot.png` | 360° skyline elevation plot from DEM             |
+| `*.ply`                | Optional Poisson mesh output (if mesh enabled)   |
+
+All files are saved under the same directory as the input image.
+
+---
