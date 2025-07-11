@@ -1,4 +1,4 @@
-# Skyline-Based large-scale VPS
+# Large Scale VPS
 
 This project provides a full pipeline for extracting skylines from real-world images, matching them against DEM (Digital Elevation Model)-based 360° skylines, and estimating the optimal viewing direction (azimuth) using NCC-based matching.
 
@@ -49,7 +49,7 @@ pip install -r requirements.txt
 | `resampled_DEM.bin`    | Resampled DEM as point cloud (for matching)      |
 | `skyline.png`          | Skyline overlay image extracted from RGB         |
 | `skyline_360_plot.png` | 360° skyline elevation plot from DEM             |
-| `*.ply`                | Optional Poisson mesh output (if mesh enabled)   |
+| `*.obj`                | Optional Poisson mesh output (if mesh enabled)   |
 
 All files are saved under the same directory as the input image.
 
