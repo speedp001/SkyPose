@@ -19,7 +19,7 @@ from transformers import AutoImageProcessor, AutoModelForSemanticSegmentation
 ##### SkylineExtractor 클래스 정의
 class SkylineExtractor:
 
-    def __init__(self, dem_path, bin_path, image_path, fov_v, fov_h):
+    def __init__(self, dem_path, bin_path, image_path, fov_v, fov_h, visualization):
         """
         image_path: 원본 이미지 경로
         fov_h: 시야각
@@ -45,6 +45,9 @@ class SkylineExtractor:
         
         # 좌우 시야각
         self.fov_h = fov_h
+        
+        # 시각화 여부
+        self.visualization = visualization
 
     ##### segmentation: SegFormer
     def SegFormer(self):
@@ -94,9 +97,11 @@ class SkylineExtractor:
         return seg_rgb_resized
 
     ##### user skyline 추출
-    def user_skyline(self, sample_step):
+    def user_skyline(self, sample_step, pitch, roll):
         """
         사용자 이미지에서 스카이라인 추출
+        skyline.png: 기존처럼 픽셀 기반으로 시각화 및 저장
+        skyline.txt: 각 픽셀 단위 별 ray를 만들고 roll/pitch 보정 후 elevation(°)로 저장
         sample_step: 픽셀 단위 샘플링
         """
         
@@ -190,6 +195,7 @@ class SkylineExtractor:
         # 결측값(NaN) 보간
         valid_mask = ~np.isnan(skyline)
         if valid_mask.sum() > 0:
+            print("NaN values found in user skyline, interpolating...")
             skyline[~valid_mask] = np.interp(
                 np.flatnonzero(~valid_mask),
                 np.flatnonzero(valid_mask),
@@ -201,19 +207,85 @@ class SkylineExtractor:
         kernel = np.ones(window_size) / window_size
         padded = np.pad(skyline, (window_size // 2, window_size // 2), mode='edge')
         skyline = np.convolve(padded, kernel, mode='valid')
-
+        
         # 픽셀 -> 각도 매핑
-        # angle_x = -FOV/2 + (FOV * x / (w-1))
+        # angle_x = -fov_h/2 + (fov_h * x / (w-1))
         angle_indices = -self.fov_h / 2 + (self.fov_h * sample_indices / (w - 1))
 
-        # 픽셀 y좌표를 fov_v 각도값으로 변환
-        elevations = ((h / 2.0) - skyline) / h * self.fov_v
-        sampled_elevations = elevations[sample_indices]
+        # 카메라 주점
+        cx = (w - 1) / 2
+        cy = (h - 1) / 2
         
+        # 시야각 절반의 각도
+        # 카메라 중심에서 이미지 끝까지의 방향 비율을 실제 각도로 변환
+        tan_h = np.tan(np.deg2rad(self.fov_h) / 2)
+        tan_v = np.tan(np.deg2rad(self.fov_v) / 2)
+
+        # 샘플링된 (x,y) 좌표
+        xs = sample_indices.astype(np.float32)
+        ys = skyline[sample_indices].astype(np.float32)
+
+        # 픽셀 -> 카메라 광선
+        """
+        카메라 Ray의 좌우(u) 상하(v) 방향 계산
+        (xs - cx) / cx
+        중심에서의 거리(픽셀)를 이미지 크기 기준 비율 변환
+        (왼쪽 끝: -1, 중심: 0, 오른쪽 끝: +1)
+        """
+        u = ((xs - cx) / cx) * tan_h
+        v = ((cy - ys) / cy) * tan_v
+
+        # 이미지 평면을 z=1 평면에 투영시켜서 구한 스케일이 없는 방향 벡터
+        rays = np.stack([u, v, np.ones_like(u)], axis=1)
+
+        # roll/pitch 역회전 행렬 구성
+        roll_rad  = np.deg2rad(roll)
+        pitch_rad = np.deg2rad(pitch)
+
+        c_r, s_r = np.cos(-roll_rad),  np.sin(-roll_rad)
+        c_p, s_p = np.cos(-pitch_rad), np.sin(-pitch_rad)
+
+        """
+        Z축 회전: Roll 회전 각도 회전
+        R_z(θ) = [[cosθ, -sinθ, 0],
+                [sinθ,  cosθ, 0],
+                [   0,     0, 1]]
+
+        X축 회전: Pitch 회전 각도 회전
+        R_x(θ) = [[1,     0,      0],
+                [0,  cosθ,  -sinθ],
+                [0,  sinθ,   cosθ]]
+        """
+
+        Rz = np.array([
+            [ c_r, -s_r, 0],
+            [ s_r,  c_r, 0],
+            [   0,    0, 1]
+        ], dtype=np.float32)
+
+        Rx = np.array([
+            [ 1,   0,   0],
+            [ 0,  c_p, -s_p],
+            [ 0,  s_p,  c_p]
+        ], dtype=np.float32)
+
+        # Roll 및 Pitch 보정 행렬
+        # (3,3) @ (3,L) -> (3,L) -> .T -> (L,3)
+        R = Rx @ Rz
+        rays = (R @ rays.T).T
+
+        # X,Y,Z 좌표를 통해 밑변의 길이 계산
+        # np.sqrt(X^2 + Z^2): 밑변 길이
+        horizontal_dist = np.sqrt(rays[:, 0]**2 + rays[:, 2]**2)
+
+        # arctan 밑변과 높이 비율을 이용해 고도각 계산
+        # np.arctan2(rays[:, 1]: 높이
+        elevations = np.rad2deg(np.arctan2(rays[:, 1], horizontal_dist))
+
         # skyline.txt 저장
         skyline_path = f"{self.image_dir}/skyline.txt"
         with open(skyline_path, "w") as f:
-            f.write(",".join([f"{val:.5f}" for val in sampled_elevations]))
+            f.write(",".join([f"{val:.5f}" for val in elevations]))
         print(f"Saved {skyline_path}")
 
         # 원본 이미지 크기 투명 배경 생성
@@ -235,17 +307,25 @@ class SkylineExtractor:
         Image.fromarray(skyline_img).save(skyline_png_path)
         print(f"Saved {skyline_png_path}")
 
-        # # 시각화
-        # # 원본 이미지와 크기 동일시
-        # plt.figure(figsize=(w / 100, h / 100))
-        # plt.imshow(img)
-        # plt.plot(range(w), skyline, color='red', linewidth=1)
-        # plt.title("User Skyline")
-        # plt.axis("off")
-        # plt.tight_layout()
-        # plt.show()
-        
-        return angle_indices, sample_indices
+        # 시각화
+        # 원본 이미지와 크기 동일시
+        if (self.visualization==True):
+            plt.figure(figsize=(w / 100, h / 100))
+            plt.imshow(img)
+            plt.plot(sample_indices, skyline[sample_indices], color='red', linewidth=1)
+            plt.title("User Skyline")
+            plt.axis("off")
+            plt.tight_layout()
+            
+            # 'q' 키를 누르면 창 닫기
+            def on_key(event):
+                if event.key in ('q', 'ㅂ'):
+                    plt.close(event.canvas.figure)
+            plt.gcf().canvas.mpl_connect('key_press_event', on_key)
+            
+            plt.show()
+
+        return angle_indices, sample_indices, elevations
 
     ##### 360도 DEM 스카이라인 추출
     def skyline_360_DEM(self, lat, lon, angles):
@@ -272,9 +352,9 @@ class SkylineExtractor:
         observer_x, observer_y = self.transformer.transform(lon, lat)
 
         # 거리별 샘플링 간격 정의
-        d1, step1 = 5000, 5
-        d2, step2 = 10000, 50
-        d3, step3 = 100000, 500
+        d1, step1 = 5000, 50
+        d2, step2 = 25000, 100
+        d3, step3 = 50000, 500
         dists1 = np.arange(step1, d1 + step1, step1)
         dists2 = np.arange(d1 + step2, d2 + step2, step2)
         dists3 = np.arange(d2 + step3, d3 + step3, step3)
@@ -333,25 +413,25 @@ class SkylineExtractor:
         resampled_bin = os.path.join(self.image_dir, "resampled_DEM.bin")
         pts.tofile(resampled_bin)
         print(f"Saved {resampled_bin}")
-            
-        # # resampled BIN 시각화
-        # tree = KDTree(pts[:, :2])
-        # _, idx = tree.query([observer_x, observer_y])
-        # center_pt = [observer_x, observer_y, float(pts[idx, 2])]
+        
+        # resampled DEM 시각화
+        if (self.visualization==True):
+            tree = KDTree(pts[:, :2])
+            _, idx = tree.query([observer_x, observer_y])
+            center_pt = [observer_x, observer_y, float(pts[idx, 2])]
 
-        # pcd = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(pts))
-        # vis = VisualizerWithKeyCallback()
-        # vis.create_window(window_name="Resampled DEM Visualization")
-        # vis.add_geometry(pcd)
-        # vis.register_key_callback(ord('q'), lambda vis: vis.destroy_window())
+            pcd = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(pts))
+            vis = VisualizerWithKeyCallback()
+            vis.create_window(window_name="Resampled DEM Visualization")
+            vis.add_geometry(pcd)
 
-        # ctr = vis.get_view_control()
-        # ctr.set_lookat(center_pt)
-        # ctr.set_front([0, 0, 1])
-        # ctr.set_up([0, 1, 0])
+            ctr = vis.get_view_control()
+            ctr.set_lookat(center_pt)
+            ctr.set_front([0, 0, 1])
+            ctr.set_up([0, 1, 0])
 
-        # vis.run()
-        # vis.destroy_window()
+            vis.run()
+            vis.destroy_window()
 
         # 360도 스카이라인 계산
         points = np.fromfile(resampled_bin, dtype=np.float32).reshape(-1, 3)
@@ -387,13 +467,14 @@ class SkylineExtractor:
                 
         valid = ~np.isnan(skyline)
         if valid.sum() > 1:
+            print("NaN values found in 360 skyline, interpolating...")
             skyline[~valid] = np.interp(np.flatnonzero(~valid), np.flatnonzero(valid), skyline[valid])
 
-        # 스무딩
-        window_size = 15
-        kernel = np.ones(window_size) / window_size
-        padded = np.pad(skyline, (window_size//2, window_size//2), mode='edge')
-        skyline = np.convolve(padded, kernel, mode='valid')
+        # # 스무딩
+        # window_size = 15
+        # kernel = np.ones(window_size) / window_size
+        # padded = np.pad(skyline, (window_size//2, window_size//2), mode='edge')
+        # skyline = np.convolve(padded, kernel, mode='valid')
 
         # skyline_360.txt 저장
         skyline_path = os.path.join(self.image_dir, "skyline_360.txt")
@@ -402,14 +483,22 @@ class SkylineExtractor:
         print(f"Saved {skyline_path}")
 
         # 360 skyline 시각화
-        plt.figure(figsize=(12, 4))
-        plt.plot(angles_360, skyline, label="DEM Skyline")
-        plt.xlabel("Azimuth (°)")
-        plt.ylabel("Elevation (°)")
-        plt.title("360° Skyline")
-        plt.grid(True)
-        plt.tight_layout()
-        plot_path = os.path.join(self.image_dir, "skyline_360_plot.png")
-        plt.savefig(plot_path)
-        print(f"Saved {plot_path}")
-        plt.show()
+        if (self.visualization==True):
+            plt.figure(figsize=(12, 4))
+            plt.plot(angles_360, skyline, label="DEM Skyline")
+            plt.xlabel("Azimuth (°)")
+            plt.ylabel("Elevation (°)")
+            plt.title("360° Skyline")
+            plt.grid(True)
+            plt.legend()
+            plt.tight_layout()
+            
+            # 'q' 키를 누르면 창 닫기
+            def on_key(event):
+                if event.key in ('q', 'ㅂ'):
+                    plt.close(event.canvas.figure)
+            plt.gcf().canvas.mpl_connect('key_press_event', on_key)
+
+            plt.show()
+    
+        return skyline
