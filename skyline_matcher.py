@@ -4,121 +4,153 @@ import matplotlib.pyplot as plt
 
 from PIL import Image
 
-
-
-
-
-##### SkylineMatcher 클래스 정의
 class SkylineMatcher:
     """
     NCC 매칭을 통해 DEM 스카이라인과 이미지 스카이라인을 비교하는 클래스
     """
     
-    def __init__(self, image_path, fov_v, fov_h, center_angle, sample_step, search_radius=20):
-        """
-        image_path: 이미지 파일 경로
-        fov_v: 수직 화각
-        fov_h: 수평 화각
-        center_angle: 중심 방위각
-        sample_step: 이미지에서 샘플링할 픽셀 간격
-        search_radius: NCC 매칭 시 검색 반경
-        """
+    def __init__(self, image_path, fov_v, fov_h, yaw, sample_step, visualization, search_radius=30):
         self.image_path       = image_path
-        self.image_dir        = os.path.dirname(image_path)
-        self.skyline_path     = os.path.join(self.image_dir, "skyline.txt")
-        self.skyline_360_path = os.path.join(self.image_dir, "skyline_360.txt")
+        # # 저장된 txt 파일 사용하는 경우
+        # self.image_dir        = os.path.dirname(image_path)
+        # self.skyline_path     = os.path.join(self.image_dir, "skyline.txt")
+        # self.skyline_360_path = os.path.join(self.image_dir, "skyline_360.txt")
+        
+        # 수직 화각
         self.fov_v            = fov_v
+        
+        # 수평 화각
         self.fov_h            = fov_h
-        self.center_angle     = center_angle % 360
+        
+        # yaw 각도
+        self.yaw              = yaw
+        
+        # 탐색 허용 각도
         self.search_radius    = search_radius
+        
+        # 샘플링 간격
         self.sample_step      = sample_step
+        
+        # 시각화 여부
+        self.visualization = visualization
 
     def load_skyline_txt(self, path):
+        """
+        skyline.txt 파일을 읽어 numpy 배열로 변환
+        """
+        
+        # 구분자 ','로 저장된 텍스트 파일 읽기
         with open(path) as f:
             return np.array([float(v) for v in f.read().split(",")])
 
-    def to_pixel_heights(self, norm_vals, h, norm_type):
-        # user skyline은 이미지 높이로 복원
-        if norm_type == "user":
-            return norm_vals * h
-        # 360도 skyline은 화각에 따라 픽셀 높이로 복원
-        elif norm_type == "360":
-            elev_deg = norm_vals * self.fov_v - (self.fov_v / 2)
-            return ((self.fov_v / 2 - elev_deg) / self.fov_v) * h
+    def angle_to_pixel(self, elev_deg, h):
+        """
+        world elevation(°) -> 카메라 로컬 elevation(°) -> 픽셀 높이로 변환
+        이미지 좌표계는 좌상단이 (0,0)이므로 위쪽이 0, 아래쪽이 h
+        """
+        
+        # 카메라 로컬 좌표계에서의 높이 계산
+        pixel_height = ((self.fov_v / 2.0 - elev_deg) / self.fov_v) * h
+        
+        return pixel_height
 
-    def match_ncc(self, ref, target, allowed_starts):
-        L = len(ref)
-        best_corr, best_s = -1, allowed_starts[0]
+    def ZNCC(self, ref, target, starts):
+        """
+        주어진 ref와 target 사이의 NCC 매칭 수행
+        두 값 범위가 달라도 상관없도록 평균 제거 후 정규화해서 비교
+        """
+        
         ref_m = ref - ref.mean()
         norm_ref = np.linalg.norm(ref_m)
-
-        for s in allowed_starts:
-            if s + L <= len(target):
-                seg = target[s:s+L]
+        best_corr, best_s = -1, starts[0]
+        
+        for s in starts:
+            if s + len(ref) <= len(target):
+                tar = target[s:s+len(ref)]
             else:
-                seg = np.concatenate([target[s:], target[:(s+L)%len(target)]])
-            seg_m = seg - seg.mean()
-            norm_seg = np.linalg.norm(seg_m)
-            if norm_ref * norm_seg == 0:
+                tar = np.concatenate([target[s:], target[:(s+len(ref))%len(target)]])
+            tar_m = tar - tar.mean()
+            norm_tar = np.linalg.norm(tar_m)
+
+            if norm_ref * norm_tar == 0:
                 continue
-            corr = np.dot(ref_m, seg_m) / (norm_ref * norm_seg)
+            corr = np.dot(ref_m, tar_m) / (norm_ref * norm_tar)
             if corr > best_corr:
                 best_corr, best_s = corr, s
+                
         return best_s, best_corr
 
-    def match_skyline_NCC_angle(self):
-        # 입력 스카이라인 및 이미지 로드
-        sky_photo_n = self.load_skyline_txt(self.skyline_path)      # 이미지에서 추출된 스카이라인 (정규화)
-        sky360_n    = self.load_skyline_txt(self.skyline_360_path)  # DEM에서 추출된 360도 스카이라인
+    def match_skyline(self, user_skyline, dem_skyline, pitch):
+        """
+        이미지 스카이라인과 DEM 스카이라인을 NCC 매칭
+        """
+
+        # # 저장된 txt 파일 사용하는 경우
+        # # txt 파일 로드
+        # user_skyline = self.load_skyline_txt(self.skyline_path)
+        # user_skyline = user_skyline[:-1]
+        # dem_skyline = self.load_skyline_txt(self.skyline_360_path)
+
+        # user_skyline 마지막 값 제거
+        user_skyline = user_skyline[:-1]
+
+        # 이미지 크기
         img = np.array(Image.open(self.image_path).convert("RGB"))
         h, w = img.shape[:2]
 
-        # 이미지 픽셀 샘플 인덱스 계산
-        x_idxs = np.arange(0, w, self.sample_step)
-        if x_idxs[-1] != w-1:
-            x_idxs = np.append(x_idxs, w-1)
+        # 탐색 구간 구성
+        angle_step = 360.0 / len(dem_skyline)
+        center_idx = int(round(self.yaw / angle_step))
 
-        # DEM 스카이라인 길이 및 각도 스텝 계산
-        n = len(sky360_n)
-        angle_step = 360.0 / n
-        L = len(sky_photo_n)  # 이미지 기반 스카이라인 길이
+        search_idx = []
+        for off in range(-self.search_radius, self.search_radius + 1):
+            idx = (center_idx + off) % len(dem_skyline)
+            search_idx.append(idx)
 
-        # center_angle 기준 ± search_radius 범위 내에서 비교할 시작 인덱스들 계산
-        center_idx = int(self.center_angle / angle_step)
-        radius_idx = int(self.search_radius / angle_step)
-        allowed_starts = [(center_idx + i) % n for i in range(-radius_idx, radius_idx + 1)]
-
-        # 이미지 스카이라인 pixel height로 변환
-        y_photo = self.to_pixel_heights(sky_photo_n, h, norm_type="user")
-
-        # DEM 스카이라인도 정규화값을 픽셀 높이로 변환 (일단 전체를 변환)
-        y_360 = self.to_pixel_heights(sky360_n, h, norm_type="360")
-
-        # NCC 매칭 수행 (최적 시작 인덱스 및 상관계수 계산)
-        best_start, best_corr = self.match_ncc(y_photo, y_360, allowed_starts)
+        # ZNCC 매칭
+        best_start, best_corr = self.ZNCC(user_skyline, dem_skyline, search_idx)
         best_angle = (best_start * angle_step) % 360
 
-        # 최적 세그먼트 추출 (롤링)
-        if best_start + L <= n:
-            seg = y_360[best_start:best_start+L]
+        # DEM에서 뽑은 매칭된 스카이라인
+        # 매칭된 영역이 배열 끝을 넘어가지 않는 경우
+        if best_start + len(user_skyline) <= len(dem_skyline):
+            dem_seg_world = dem_skyline[best_start : best_start + len(user_skyline)]
+        # 매칭된 영역이 배열 끝을 넘어가는 경우
         else:
-            seg = np.concatenate([y_360[best_start:], y_360[:(best_start+L)%n]])
+            wrap = (best_start + len(user_skyline)) % len(dem_skyline)
+            dem_seg_world = np.concatenate([dem_skyline[best_start:], dem_skyline[:wrap]])
 
-        # 시각화
-        plt.figure(figsize=(w/100, h/100))
-        plt.imshow(img, origin='upper')
-        plt.plot(x_idxs, y_photo, color='red', linewidth=2, label="Photo Skyline")
-        plt.plot(x_idxs, seg,     color='blue', linewidth=2, label="DEM Skyline (Best Match)")
-        plt.title(
-            f"Range NCC\nSearch: {self.center_angle:.1f}° ± {self.search_radius}°\n"
-            f"Best: {best_angle:.2f}°, Corr: {best_corr:.4f}"
-        )
-        plt.axis('off')
-        plt.legend(loc='lower right')
-        plt.tight_layout()
-        plt.show()
+        # Pitch 보정 후 픽셀로 변환
+        y_user = self.angle_to_pixel(user_skyline - pitch, h)
+        y_dem  = self.angle_to_pixel(dem_seg_world - pitch, h)
 
-        print("Range NCC Matching 결과")
-        print(f"Center Angle: {self.center_angle}° ± {self.search_radius}°")
-        print(f"Best Match Angle: {best_angle:.2f}°, Corr: {best_corr:.4f}")
+        # 시각화 x축 구성
+        x_idxs = np.arange(0, w, self.sample_step)
+        x_idxs = x_idxs[:len(user_skyline)]
+
+        # 매칭 비교 시각화
+        if (self.visualization==True):
+            fig, axes = plt.subplots(2, 1, figsize=(10, 8), constrained_layout=True)
+            axes[0].imshow(img)
+            axes[0].plot(x_idxs, y_user, color='red', linewidth=2, label="Photo Skyline")
+            axes[0].set_xlim([0, w]); axes[0].set_ylim([h, 0]); axes[0].set_aspect('equal')
+            axes[0].set_title("Original Image with Extracted Skyline"); axes[0].axis('off'); axes[0].legend(loc='lower right')
+
+            axes[1].plot(x_idxs, y_user, color='red',  linewidth=2, label="Photo Skyline")
+            axes[1].plot(x_idxs, y_dem,  color='blue', linewidth=2, label="DEM Skyline (Matched)")
+            axes[1].set_xlim([0, w]); axes[1].set_ylim([h, 0]); axes[1].set_aspect('equal')
+            axes[1].set_title(f"Matched DEM Segment (±{self.search_radius}° search)\nBest: {best_angle:.2f}° | Corr: {best_corr:.4f}")
+            axes[1].set_xlabel("Pixel X (px)"); axes[1].set_ylabel("Pixel Height"); axes[1].legend(); axes[1].grid(True)
+            
+            # 'q' 키를 누르면 창 닫기
+            def on_key(event):
+                if event.key in ('q', 'ㅂ'):
+                    plt.close(event.canvas.figure)
+            plt.gcf().canvas.mpl_connect('key_press_event', on_key)
+            
+            plt.show()
+
+        print(f"Search radius ±{self.search_radius}° — NCC result")
+        print(f"Best azimuth: {best_angle:.2f}° | Corr: {best_corr:.4f}")
+
         return best_angle, best_corr
