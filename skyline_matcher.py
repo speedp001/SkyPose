@@ -9,7 +9,7 @@ class SkylineMatcher:
     NCC 매칭을 통해 DEM 스카이라인과 이미지 스카이라인을 비교하는 클래스
     """
     
-    def __init__(self, image_path, fov_v, fov_h, yaw, sample_step, visualization, search_radius=30):
+    def __init__(self, image_path, fov_v, fov_h, yaw, sample_step, search_radius, visualization):
         self.image_path       = image_path
         # # 저장된 txt 파일 사용하는 경우
         # self.image_dir        = os.path.dirname(image_path)
