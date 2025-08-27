@@ -51,8 +51,9 @@ class SkylineExtractor:
 
     ##### segmentation: SegFormer
     def SegFormer(self):
-        # segmentation
-        seg_output_path = os.path.join(self.image_dir, "segmentation.png")
+        """
+        SegFormer 모델을 이용해 이미지 세그멘테이션 수행
+        """
 
         # 원본 이미지 읽기
         img = Image.open(self.image_path).convert("RGB")
