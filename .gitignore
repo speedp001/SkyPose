@@ -20,3 +20,7 @@ data/
 # Checkpoints or logs
 *.ckpt
 *.log
+
+# Ignore client_data and skyline_db directories
+client_data/
+skyline_db/
