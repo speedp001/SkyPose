@@ -12,9 +12,9 @@ from skyline_extractor import SkylineExtractor
 from skyline_matcher import SkylineMatcher
 
 ##### 파일 경로 설정
-DEM_PATH  = "./data/korea_DEM.img"
-BIN_PATH  = "./data/korea_DEM.bin"
-MESH_PATH = "./data/korea_DEM.obj"
+DEM_PATH  = "./skyline_db/korea_DEM.img"
+BIN_PATH  = "./skyline_db/korea_DEM.bin"
+MESH_PATH = "./skyline_db/korea_DEM.obj"
 
 ##### FOV
 FOV_V = 73.7
@@ -48,7 +48,7 @@ async def VPS(payload: Client = Body(...)):
 
     # Body(...): 요청(JSON)을 함수 인자로 파싱해주는 FastAPI 기능
     # 저장 디렉토리 (파일명: lat_lon)
-    save_dir = os.path.join("data", f"{payload.client_latitude:.5f}_{payload.client_longitude:.5f}")
+    save_dir = os.path.join("client_data", f"{payload.client_latitude:.5f}_{payload.client_longitude:.5f}")
     os.makedirs(save_dir, exist_ok=True)
 
     # base64 -> PNG 이미지 저장
@@ -70,16 +70,16 @@ async def VPS(payload: Client = Body(...)):
     altitude = dem.get_altitude()
 
     ##### SkylineExtractor
-    extractor = SkylineExtractor(DEM_PATH, BIN_PATH, img_path, FOV_V, FOV_H, visualization=False)
-    seg = os.path.join(save_dir, "skyline.png")
+    extractor = SkylineExtractor(DEM_PATH, BIN_PATH, img_path, FOV_V, FOV_H, visualization=False, save=False)
 
     # 이미지 skyline 추출
-    pixel_angles, pixel_samples, user_skyline = extractor.user_skyline(
-        SAMPLE_STEP, payload.client_pitch, payload.client_roll
-    )
+    pixel_angles, user_skyline, seg_base64 = extractor.user_skyline(SAMPLE_STEP, payload.client_pitch, payload.client_roll)
 
     # 360도 skyline 추출
-    dem_skyline = extractor.skyline_360_DEM(payload.client_latitude, payload.client_longitude, pixel_angles)
+    # dem_skyline = extractor.skyline_360_DEM(payload.client_latitude, payload.client_longitude, pixel_angles)
+
+    # 실시간 360도 skyline 추출
+    dem_skyline = extractor.real_time_skyline_360_DEM(payload.client_latitude, payload.client_longitude, pixel_angles)
 
     ##### SkylineMatcher
     matcher = SkylineMatcher(img_path, FOV_V, FOV_H, payload.client_yaw, SAMPLE_STEP, search_radius=30, visualization=False)
@@ -93,11 +93,12 @@ async def VPS(payload: Client = Body(...)):
     # Server 보정값 출력
     print(f"[Server] pitch: {payload.client_pitch}, yaw(best): {best_angle}, roll: {payload.client_roll}")
 
-    # skyline.png -> base64
-    seg_b64 = ""
-    if os.path.exists(seg):
-        with open(seg, "rb") as f:
-            seg_base64 = base64.b64encode(f.read()).decode("utf-8")
+    ##### skyline.png 저장 시 사용
+    # # skyline.png -> base64
+    # seg = os.path.join(save_dir, "skyline.png")
+    # if os.path.exists(seg):
+    #     with open(seg, "rb") as f:
+    #         seg_base64 = base64.b64encode(f.read()).decode("utf-8")
 
     # Server 결과 반환
     return {
