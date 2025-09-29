@@ -517,7 +517,7 @@ class SkylineExtractor:
         return skyline
 
     ##### 실시간 360° 스카이라인 추출
-    def real_time_skyline_360_DEM(self, lat, lon, angles):
+    def real_time_skyline_360_DEM(self, lat, lon):
         """
         skyline_db에 저장된 360_skyline.txt 파일을 이용하여 실시간 360° 스카이라인 추출
         """
