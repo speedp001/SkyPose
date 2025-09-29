@@ -2,6 +2,7 @@ import rasterio
 import numpy as np
 import open3d as o3d
 
+from tqdm import tqdm
 from pyproj import Transformer
 from scipy.spatial import KDTree
 from scipy.interpolate import griddata
