@@ -26,6 +26,7 @@ IMAGE_PATH = "./client_data/329_37_5452685_127_1177039/image.png"
 
 
 
+
 ##### 카메라 기울기 및 고도 각도 -> IMU센서 이용해서 추정 예정
 YAW = 329
 PITCH = 0
@@ -36,20 +37,20 @@ ROLL = 0
 
 
 ##### DEMProcessor
-dem = DEMProcessor(LAT, LON, DEM_PATH, BIN_PATH, MESH_PATH, upsample=1, visualization=True)
+dem = DEMProcessor(LAT, LON, DEM_PATH, BIN_PATH, MESH_PATH, upsample=1, visualization=False)
 
 # BIN 파일 생성 및 시각화
 # dem.make_bin(radius=50000)
 
 # Altitude 조회
-# altitude = dem.get_altitude()
+altitude = dem.get_altitude()
 
 
 
 
 
 ##### SkylineExtractor
-extractor = SkylineExtractor(DEM_PATH, BIN_PATH, IMAGE_PATH, FOV_V, FOV_H, visualization=False, save=False)
+extractor = SkylineExtractor(DEM_PATH, BIN_PATH, IMAGE_PATH, FOV_V, FOV_H, visualization=False, save=True)
 
 # 이미지 skyline 추출
 pixel_angles, user_skyline, seg_base64 = extractor.user_skyline(SAMPLE_STEP, PITCH, ROLL)
@@ -58,7 +59,7 @@ pixel_angles, user_skyline, seg_base64 = extractor.user_skyline(SAMPLE_STEP, PIT
 # extractor.db_maker(pixel_angles)
 
 # 360도 skyline 추출
-dem_skyline = extractor.skyline_360_DEM(LAT, LON, pixel_angles)
+# dem_skyline = extractor.skyline_360_DEM(LAT, LON, pixel_angles)
 
 # Real-time 360도 skyline 추출
 dem_skyline = extractor.real_time_skyline_360_DEM(LAT, LON)
