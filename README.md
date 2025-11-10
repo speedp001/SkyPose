@@ -1,4 +1,4 @@
-### ![IWAIT2026 Logo]([Imgur](https://imgur.com/UInLqku)
+(https://imgur.com/UInLqku)
 
 #  IWAIT 2026 Conference Paper
 
