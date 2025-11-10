@@ -1,4 +1,4 @@
-(https://imgur.com/UInLqku)
+[(https://imgur.com/UInLqku)](https://i.imgur.com/UInLqku.png)
 
 #  IWAIT 2026 Conference Paper
 
