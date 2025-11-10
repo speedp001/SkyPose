@@ -1,5 +1,5 @@
 ### ![IWAIT2026 Logo](https://i.imgur.com/UInLqku.png)
-[img]https://i.imgur.com/UInLqku.png[/img]
+
 #  IWAIT 2026 Conference Paper
 
 > 본 프로젝트는 2026년 **The International Workshop on Advanced Image Technology (IWAIT 2026)** 컨퍼런스에 채택되어,  
