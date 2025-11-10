@@ -1,4 +1,4 @@
-### ![IWAIT2026 Logo]([Imgur](https://imgur.com/UInLqku))
+### ![IWAIT2026 Logo]([Imgur](https://imgur.com/UInLqku)
 
 #  IWAIT 2026 Conference Paper
 
@@ -11,8 +11,6 @@
 - **논문 링크**: [https://link.springer.com/chapter/10.1007/978-3-031-93163-5_9](https://link.springer.com/chapter/10.1007/978-3-031-93163-5_9)
 
 > 논문 제목: *SkyPose: Real-Time Camera Pose Estimation via Skyline Matching in Mountainous Terrain*
-
----
 
 # Large Scale VPS
 
