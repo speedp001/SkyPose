@@ -592,6 +592,23 @@ class SkylineExtractor:
                 continue
             saved_coords.append(file_key)
 
+            # 기존 파일 존재 + 유효성 검사
+            expected_len = len(angles_360)
+            skyline_path = os.path.join(skyline_save_dir, f"{file_key}_skyline_360.txt")
+
+            if os.path.exists(skyline_path):
+                try:
+                    with open(skyline_path, "r") as f:
+                        vals = f.read().strip().split(",")
+                    if len(vals) == expected_len:
+                        # 정상 파일 → 스킵
+                        # print(f"[Skip exists] {skyline_path}")
+                        continue
+                    else:
+                        print(f"[Recompute] {skyline_path} (invalid length {len(vals)}/{expected_len})")
+                except Exception:
+                    print(f"[Recompute] {skyline_path} (read error)")
+
             # 관측지점 UTM 좌표
             x_utm, y_utm = self.gps_to_utm_transformer.transform(lon, lat)
 
