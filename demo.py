@@ -14,21 +14,20 @@ from skyline_matcher import SkylineMatcher
 FOV_V = 48
 FOV_H = 74
 
-LAT = 37.55453
-LON = 127.04611
+LAT = 37.5452685
+LON = 127.1177039
 SAMPLE_STEP = 10
 
 DEM_PATH  = "./skyline_db/korea_DEM.img"
 BIN_PATH = "./skyline_db/korea_DEM.bin"
 MESH_PATH = "./skyline_db/korea_DEM.obj"
-IMAGE_PATH = "./client_data/37.55453_127.04611/image.png"
-
+IMAGE_PATH = "./client_data/329_37_5452685_127_1177039/image.png"
 
 
 
 
 ##### 카메라 기울기 및 고도 각도 -> IMU센서 이용해서 추정 예정
-YAW = 0
+YAW = 329
 PITCH = 0
 ROLL = 0
 
