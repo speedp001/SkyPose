@@ -43,7 +43,7 @@ dem = DEMProcessor(LAT, LON, DEM_PATH, BIN_PATH, MESH_PATH, upsample=1, visualiz
 # dem.make_bin(radius=50000)
 
 # Altitude 조회
-altitude = dem.get_altitude()
+# altitude = dem.get_altitude()
 
 
 
