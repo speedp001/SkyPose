@@ -31,6 +31,11 @@
 ## Project Structure
 
 <img width="5324" height="1884" alt="Fig 1" src="https://i.imgur.com/Xby9gek.jpeg" />
+The framework consists of three sequential stages:
+1. **Skyline extraction** from the input RGB image  
+2. **360° skyline generation** from DEM at the observation location  
+3. **Camera pose estimation** via skyline matching  
+An initial orientation provided by GNSS/IMU sensors is used to constrain the search space, and the final output is a refined camera azimuth corrected by skyline alignment.
 
 ---
 
@@ -59,6 +64,7 @@ Estimates best matching viewing direction (azimuth) by:
 - Performing sliding-window **NCC (Normalized Cross-Correlation)**
 - Matching `skyline.txt` to best segment of `skyline_360.txt`
 - Visualizing the match
+<img width="5324" height="1884" alt="Fig 1" src="[https://i.imgur.com/Xby9gek.jpeg"](https://i.imgur.com/H8NnK4h.png) />
 
 ### `Outputs`
 | File                   | Description                                      |
