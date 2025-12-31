@@ -12,7 +12,7 @@
 
 > 논문 제목: *SkyPose: Real-Time Camera Pose Estimation via Skyline Matching in Mountainous Terrain*
 
-# Index
+## Index
 
 - [Project Introduction](#project-introduction)  
 - [Project Structure](#project-structure)
@@ -24,11 +24,13 @@
 
 ## Project Introduction
 
-**SkyPose** is a real-time outdoor **Visual Positioning System (VPS)** that refines a camera’s orientation by matching a skyline extracted from a real-world image with a **DEM (Digital Elevation Model)-based 360° skyline**. Outdoor VPS often relies on **GNSS** and **IMU** as auxiliary cues, but IMU accuracy can degrade due to magnetic disturbances, accumulated drift, and sensor noise—especially in mountainous terrain and in regions with dense electronic interference  [oai_citation:1‡SkyPose_Real-time camera pose estimation by skyline matching in mountainous terrain.pdf](sediment://file_00000000d7087207ab397249f8aa019a).
+ Visual Positioning System (VPS) estimates a camera’s pose from visual information of the surrounding environment and is widely used in autonomous driving, robotic navigation, and augmented reality (AR). Outdoor VPS commonly uses Global Navigation Satellite Systems (GNSS) and Inertial Measurement Units (IMU) as auxiliary cues. However, IMU accuracy can degrade due to magnetic disturbances and sensor noise. This paper presents a new outdoor VPS that precisely refines the IMU measurements by matching skylines extracted from input images with those generated from a Digital Elevation Model (DEM). The proposed system operates in real time and delivers high-accuracy pose estimates even under unreliable GNSS coverage and noisy IMU readings. The framework is robust and well-suited to mountainous terrain, enabling effective deployment in military, exploration, and AR-based applications.
 
-SkyPose starts from coarse pose estimates provided by sensors (GNSS/IMU) available on mobile devices, then performs skyline matching to determine the corresponding segment on the 360° DEM skyline and estimate the optimal **azimuth** angle. Through this process, sensor-induced orientation errors are corrected while maintaining real-time performance.
+---
 
-The framework is designed to operate reliably in GNSS-unstable regions and is well-suited to mountainous terrain, enabling practical deployment for applications such as **military equipment**, **exploration drone trajectory tracking**, and **AR content alignment**.
+## Project Structure
+
+
 
 ---
 
