@@ -15,20 +15,20 @@
 # Index
 
 - [Project Introduction](#project-introduction)  
-- [Project Structure](#project-structure)  
-- [Key Features](#key-features)  
-- [Experiments](#experiments)  
+- [Project Structure](#project-structure)
+- [Modules Overview](#modules-overview)
+- [Experiments](#experiments)
 - [Requirements](#requirements)  
-- [Demo Video](#demo-video)  
+- [Demo Video](#demo-video)
 <br></br>
 
 ## Project Introduction
 
 **SkyPose** is a real-time outdoor **Visual Positioning System (VPS)** that refines a camera’s orientation by matching a skyline extracted from a real-world image with a **DEM (Digital Elevation Model)-based 360° skyline**. Outdoor VPS often relies on **GNSS** and **IMU** as auxiliary cues, but IMU accuracy can degrade due to magnetic disturbances, accumulated drift, and sensor noise—especially in mountainous terrain and in regions with dense electronic interference  [oai_citation:1‡SkyPose_Real-time camera pose estimation by skyline matching in mountainous terrain.pdf](sediment://file_00000000d7087207ab397249f8aa019a).
 
-SkyPose starts from coarse pose estimates provided by sensors (GNSS/IMU) available on mobile devices, then performs skyline matching to determine the corresponding segment on the 360° DEM skyline and estimate the optimal **azimuth** angle. Through this process, sensor-induced orientation errors are corrected while maintaining real-time performance  [oai_citation:2‡SkyPose_Real-time camera pose estimation by skyline matching in mountainous terrain.pdf](sediment://file_00000000d7087207ab397249f8aa019a).
+SkyPose starts from coarse pose estimates provided by sensors (GNSS/IMU) available on mobile devices, then performs skyline matching to determine the corresponding segment on the 360° DEM skyline and estimate the optimal **azimuth** angle. Through this process, sensor-induced orientation errors are corrected while maintaining real-time performance.
 
-The framework is designed to operate reliably in GNSS-unstable regions and is well-suited to mountainous terrain, enabling practical deployment for applications such as **military equipment**, **exploration drone trajectory tracking**, and **AR content alignment**
+The framework is designed to operate reliably in GNSS-unstable regions and is well-suited to mountainous terrain, enabling practical deployment for applications such as **military equipment**, **exploration drone trajectory tracking**, and **AR content alignment**.
 
 ---
 
@@ -58,18 +58,7 @@ Estimates best matching viewing direction (azimuth) by:
 - Matching `skyline.txt` to best segment of `skyline_360.txt`
 - Visualizing the match
 
----
-
-## Requirements
-
-Install the required Python libraries:
-
-```bash
-pip install -r requirements.txt
-```
-
-## File Outputs
-
+### Outputs
 | File                   | Description                                      |
 |------------------------|--------------------------------------------------|
 | `skyline.txt`          | Normalized skyline from image (1D CSV format)    |
@@ -82,3 +71,19 @@ pip install -r requirements.txt
 All files are saved under the same directory as the input image.
 
 ---
+
+## Requirements
+
+Install the required Python libraries:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## Demo Video
+> Supplemental Video
+> https://youtu.be/qXvuMw8qoJo
+> Presentation Video
+> 
