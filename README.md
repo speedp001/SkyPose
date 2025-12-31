@@ -49,6 +49,24 @@ Handles preprocessing of DEM data including:
 - 3D visualization using Open3D
 
 ### `SkylineExtractor`
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="https://i.imgur.com/PJSJWe3.png" width="100%" />
+      <br/>
+      <sub>(a) Original DEM</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="https://i.imgur.com/DNlwZDW.png" width="100%" />
+      <br/>
+      <sub>(b) Ray-cast Resampled DEM</sub>
+    </td>
+  </tr>
+</table>
+DEM resampling
+- The raw DEM often contains missing values along ray directions and fails to sufficiently capture long-range terrain structures.
+- To address this issue, SkyPose applies a ray-casting-based resampling strategy with distance-dependent sampling density, enabling stable estimation of maximum elevation values consistent with the actual line of sight.
+
 Extracts skylines from:
 - **RGB images** using semantic segmentation (SegFormer)
 - **DEM** using 360° ray sampling and elevation interpolation
@@ -59,12 +77,12 @@ Outputs:
 - Visualization images: `skyline.png`, `skyline_360_plot.png`
 
 ### `SkylineMatcher`
+<img width="5324" height="1884" alt="Fig 1" src="https://i.imgur.com/H8NnK4h.png" />
 Estimates best matching viewing direction (azimuth) by:
 - Converting skyline vectors to pixel/elevation angles
 - Performing sliding-window **NCC (Normalized Cross-Correlation)**
 - Matching `skyline.txt` to best segment of `skyline_360.txt`
 - Visualizing the match
-<img width="5324" height="1884" alt="Fig 1" src="https://i.imgur.com/H8NnK4h.png />
 
 ### `Outputs`
 | File                   | Description                                      |
