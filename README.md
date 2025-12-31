@@ -30,7 +30,7 @@
 
 ## Project Structure
 
-
+<img width="5324" height="1884" alt="Fig 1" src="https://imgur.com/Xby9gek" />
 
 ---
 
@@ -60,7 +60,7 @@ Estimates best matching viewing direction (azimuth) by:
 - Matching `skyline.txt` to best segment of `skyline_360.txt`
 - Visualizing the match
 
-### Outputs
+### `Outputs`
 | File                   | Description                                      |
 |------------------------|--------------------------------------------------|
 | `skyline.txt`          | Normalized skyline from image (1D CSV format)    |
@@ -87,5 +87,6 @@ pip install -r requirements.txt
 ## Demo Video
 > Supplemental Video
 > https://youtu.be/qXvuMw8qoJo
+<br></br>
 > Presentation Video
 > 
