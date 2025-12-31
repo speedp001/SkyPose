@@ -12,9 +12,51 @@
 
 > 논문 제목: *SkyPose: Real-Time Camera Pose Estimation via Skyline Matching in Mountainous Terrain*
 
-# Large Scale VPS
+# Index
 
-This project provides a full pipeline for extracting skylines from real-world images, matching them against DEM (Digital Elevation Model)-based 360° skylines, and estimating the optimal viewing direction (azimuth) using NCC-based matching.
+- [Project Introduction](#project-introduction)  
+- [Project Structure](#project-structure)  
+- [Key Features](#key-features)  
+- [Experiments](#experiments)  
+- [Requirements](#requirements)  
+- [Demo Video](#demo-video)  
+<br></br>
+
+# Project Introduction
+
+**SkyPose** is a real-time outdoor **Visual Positioning System (VPS)** that refines a camera’s orientation by matching a skyline extracted from a real-world image with a **DEM (Digital Elevation Model)-based 360° skyline**. Outdoor VPS often relies on **GNSS** and **IMU** as auxiliary cues, but IMU accuracy can degrade due to magnetic disturbances, accumulated drift, and sensor noise—especially in mountainous terrain and in regions with dense electronic interference  [oai_citation:1‡SkyPose_Real-time camera pose estimation by skyline matching in mountainous terrain.pdf](sediment://file_00000000d7087207ab397249f8aa019a).
+
+SkyPose starts from coarse pose estimates provided by sensors (GNSS/IMU) available on mobile devices, then performs skyline matching to determine the corresponding segment on the 360° DEM skyline and estimate the optimal **azimuth** angle. Through this process, sensor-induced orientation errors are corrected while maintaining real-time performance  [oai_citation:2‡SkyPose_Real-time camera pose estimation by skyline matching in mountainous terrain.pdf](sediment://file_00000000d7087207ab397249f8aa019a).
+
+The framework is designed to operate reliably in GNSS-unstable regions and is well-suited to mountainous terrain, enabling practical deployment for applications such as **military equipment**, **exploration drone trajectory tracking**, and **AR content alignment**  [oai_citation:3‡SkyPose_Real-time camera pose estimation by skyline matching in mountainous terrain.pdf](sediment://file_00000000d7087207ab397249f8aa019a).
+
+```text
+[DEM Data + GPS]
+   ↓
+[Ray-casting-based DEM Resampling]
+   ↓
+[Generate 360° DEM Skyline]
+   ↓
+[Skyline Smoothing]
+   ↓
+[ZNCC Matching (DEM 360° vs. Image Skyline)]
+   ↓
+[Azimuth Refinement / Sensor Output Calibration]
+
+---
+
+[User RGB Image]
+   ↓
+[Skyline Segmentation (e.g., SegFormer)]
+   ↓
+[Post-processing + Skyline Extraction]
+   ↓
+[Skyline Smoothing]
+   ↓
+[Skyline Matching with DEM 360° Skyline]
+   ↓
+[Refined Camera Pose (Azimuth)]
+```
 
 ---
 
