@@ -96,6 +96,7 @@ Outputs:
 
 ### `SkylineMatcher`
 <img width="5324" height="1884" alt="Fig 1" src="https://i.imgur.com/H8NnK4h.png" />
+
 Estimates best matching viewing direction (azimuth) by:
 - Converting skyline vectors to pixel/elevation angles
 - Performing sliding-window **NCC (Normalized Cross-Correlation)**
