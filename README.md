@@ -31,11 +31,25 @@
 ## Project Structure
 
 <img width="5324" height="1884" alt="Fig 1" src="https://i.imgur.com/Xby9gek.jpeg" />
-The framework consists of three sequential stages:
-1. **Skyline extraction** from the input RGB image  
-2. **360° skyline generation** from DEM at the observation location  
-3. **Camera pose estimation** via skyline matching  
-An initial orientation provided by GNSS/IMU sensors is used to constrain the search space, and the final output is a refined camera azimuth corrected by skyline alignment.
+
+The SkyPose framework follows a **three-stage pipeline** designed for robust and real-time camera pose refinement in outdoor mountainous environments.
+
+1. **Skyline Extraction from RGB Image**  
+   The input RGB image is processed using semantic segmentation to isolate terrain regions.  
+   Non-terrain objects (e.g., clouds, birds, antennas) and optical artifacts are removed through boundary-based filtering and smoothing.  
+   The uppermost boundary of the remaining terrain region is extracted as a **1D image skyline**, representing the visible terrain geometry.
+
+2. **360° Skyline Generation from DEM**  
+   Given an approximate observation location from GPS, a **360° skyline** is generated from the DEM.  
+   Rays are cast uniformly over all azimuth directions, and the maximum elevation along each ray is selected.  
+   To ensure stability, the DEM is resampled using a ray-casting-based strategy with distance-dependent sampling density, producing a skyline consistent with the actual line of sight.
+
+3. **Camera Pose Estimation via Skyline Matching**  
+   The image skyline and the DEM-based 360° skyline are represented as angular sequences and compared using normalized cross-correlation.  
+   The best-matching segment determines the camera’s viewing direction, and the azimuth is refined accordingly.
+
+An initial orientation provided by **GNSS/IMU sensors** is used to constrain the azimuth search range and align the image skyline horizontally.  
+This design enables **accurate sensor calibration and real-time performance**, resulting in a refined camera azimuth that is robust to GNSS instability and IMU noise.
 
 ---
 
@@ -63,9 +77,13 @@ Handles preprocessing of DEM data including:
     </td>
   </tr>
 </table>
+
 DEM resampling
-- The raw DEM often contains missing values along ray directions and fails to sufficiently capture long-range terrain structures.
-- To address this issue, SkyPose applies a ray-casting-based resampling strategy with distance-dependent sampling density, enabling stable estimation of maximum elevation values consistent with the actual line of sight.
+- Raw DEM data often contain missing or sparsely sampled elevation values along ray directions, which can lead to unstable skyline extraction.
+- In addition, directly sampling the DEM may fail to capture long-range terrain structures that significantly influence the visible skyline.
+- To address these issues, SkyPose applies a **ray-casting-based DEM resampling strategy** with distance-dependent sampling density.
+- Near-range regions are sampled densely, while far-range regions are sampled more sparsely, enabling stable estimation of the maximum elevation along each ray.
+- This process produces a DEM representation that is consistent with the actual line of sight and suitable for reliable 360° skyline generation.
 
 Extracts skylines from:
 - **RGB images** using semantic segmentation (SegFormer)
