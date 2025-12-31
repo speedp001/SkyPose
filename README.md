@@ -30,7 +30,7 @@
 
 ## Project Structure
 
-<img width="5324" height="1884" alt="Fig 1" src="[https://imgur.com/Xby9gek](https://imgur.com/Xby9gek)" />
+<img width="5324" height="1884" alt="Fig 1" src="https://imgur.com/Xby9gek" />
 
 ---
 
