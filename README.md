@@ -3,7 +3,7 @@
 #  IWAIT 2026 Conference Paper
 
 > 본 프로젝트는 2026년 **The International Workshop on Advanced Image Technology (IWAIT 2026)** 컨퍼런스에 채택되어,  
-> SPIE, the international society for optics and photonics에 정식 출간되었습니다.  
+> SPIE, the international society for optics and photonics에 정식 출간되었습니다.
 > 컨퍼런스는 2026년 1월 12–14일, TAIWAN, KAOHSIUNG에서 개최되었습니다.
 
 - **IWAIT 2026 공식 웹사이트**: https://iwait.online/paper-submission-for-iwait-2026/
