@@ -68,12 +68,12 @@ Handles preprocessing of DEM data including:
     <td align="center" width="50%">
       <img src="https://i.imgur.com/PJSJWe3.png" width="100%" />
       <br/>
-      <sub>(a) Original DEM</sub>
+      <sub>Original DEM</sub>
     </td>
     <td align="center" width="50%">
       <img src="https://i.imgur.com/DNlwZDW.png" width="100%" />
       <br/>
-      <sub>(b) Ray-cast Resampled DEM</sub>
+      <sub>Ray-cast Resampled DEM</sub>
     </td>
   </tr>
 </table>
