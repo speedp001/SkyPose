@@ -129,7 +129,8 @@ pip install -r requirements.txt
 
 ## Demo Video
 > Supplemental Video
+> <br></br>
 > https://youtu.be/qXvuMw8qoJo
 <br></br>
 > Presentation Video
-> 
+> <br></br>
