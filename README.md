@@ -16,7 +16,6 @@
 - [Project Introduction](#project-introduction)  
 - [Project Structure](#project-structure)
 - [Modules Overview](#modules-overview)
-- [Experiments](#experiments)
 - [Requirements](#requirements)  
 - [Demo Video](#demo-video)
 <br></br>
