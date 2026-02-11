@@ -17,8 +17,8 @@ BIN_PATH  = "./skyline_db/korea_DEM.bin"
 MESH_PATH = "./skyline_db/korea_DEM.obj"
 
 ##### FOV
-FOV_V = 73.7
-FOV_H = 57.6
+FOV_V = 48
+FOV_H = 74
 SAMPLE_STEP = 10
 
 ##### Client JSON 파싱
@@ -61,7 +61,7 @@ async def VPS(payload: Client = Body(...)):
         f.write(image_bytes)
 
     ##### DEMProcessor
-    dem = DEMProcessor(payload.client_latitude, payload.client_longitude, DEM_PATH, BIN_PATH, MESH_PATH, upsample=1)
+    dem = DEMProcessor(payload.client_latitude, payload.client_longitude, DEM_PATH, BIN_PATH, MESH_PATH, upsample=1, visualization=False)
 
     # BIN 파일 생성 및 시각화
     # dem.make_bin(radius=50000, visualization=True)
@@ -76,10 +76,10 @@ async def VPS(payload: Client = Body(...)):
     pixel_angles, user_skyline, seg_base64 = extractor.user_skyline(SAMPLE_STEP, payload.client_pitch, payload.client_roll)
 
     # 360도 skyline 추출
-    # dem_skyline = extractor.skyline_360_DEM(payload.client_latitude, payload.client_longitude, pixel_angles)
+    dem_skyline = extractor.skyline_360_DEM(payload.client_latitude, payload.client_longitude, pixel_angles)
 
     # 실시간 360도 skyline 추출
-    dem_skyline = extractor.real_time_skyline_360_DEM(payload.client_latitude, payload.client_longitude, pixel_angles)
+    # dem_skyline = extractor.real_time_skyline_360_DEM(payload.client_latitude, payload.client_longitude)
 
     ##### SkylineMatcher
     matcher = SkylineMatcher(img_path, FOV_V, FOV_H, payload.client_yaw, SAMPLE_STEP, search_radius=30, visualization=False)
