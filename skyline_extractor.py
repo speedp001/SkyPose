@@ -561,6 +561,10 @@ class SkylineExtractor:
         database_dir = os.path.dirname(self.dem_path)
         skyline_save_dir = os.path.join(database_dir, "skyline_360")
 
+        # 디렉토리 없으면 생성
+        if not os.path.exists(skyline_save_dir):
+            os.makedirs(skyline_save_dir, exist_ok=True)
+
         # 샘플링 방위각 간격 계산
         if len(angles) > 1:
             pixel_angle_step = abs(angles[1] - angles[0])
