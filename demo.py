@@ -62,8 +62,8 @@ start_time = time.time()
 
 
 ##### SkylineExtractor
-extractor = SkylineExtractor(DEM_PATH, BIN_PATH, IMAGE_PATH, FOV_V, FOV_H, visualization=False, save=False)
-
+extractor = SkylineExtractor(DEM_PATH, BIN_PATH, IMAGE_PATH, FOV_V, FOV_H, visualization=True, save=False)
+        
 # 이미지 skyline 추출
 pixel_angles, user_skyline, seg_base64 = extractor.user_skyline(SAMPLE_STEP, PITCH, ROLL)
 
