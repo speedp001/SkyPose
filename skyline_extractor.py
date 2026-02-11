@@ -100,7 +100,7 @@ class SkylineExtractor:
         # 원본 크기로 리사이즈
         seg_rgb_resized = cv2.resize(seg_rgb, (w, h), interpolation=cv2.INTER_NEAREST)
 
-        # # 결과 저장
+        # # SegFormer 결과 저장
         # seg_output_path = f"{self.image_dir}/segmentation.png"
         # Image.fromarray(seg_rgb_resized).save(seg_output_path)
         # print(f"saved {seg_output_path}")
@@ -376,7 +376,7 @@ class SkylineExtractor:
         # 거리별 샘플링 간격 정의
         d1, step1 = 5000, 50
         d2, step2 = 25000, 100
-        d3, step3 = 50000, 500
+        d3, step3 = 43000, 500
         dists1 = np.arange(step1, d1 + step1, step1)
         dists2 = np.arange(d1 + step2, d2 + step2, step2)
         dists3 = np.arange(d2 + step3, d3 + step3, step3)
@@ -560,6 +560,10 @@ class SkylineExtractor:
         # 저장 디렉토리 준비
         database_dir = os.path.dirname(self.dem_path)
         skyline_save_dir = os.path.join(database_dir, "skyline_360")
+
+        # 디렉토리 없으면 생성
+        if not os.path.exists(skyline_save_dir):
+            os.makedirs(skyline_save_dir, exist_ok=True)
 
         # 샘플링 방위각 간격 계산
         if len(angles) > 1:
