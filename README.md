@@ -7,7 +7,7 @@
 > 컨퍼런스는 2026년 1월 12–14일, TAIWAN, KAOHSIUNG에서 개최되었습니다.
 
 - **IWAIT 2026 공식 웹사이트**: https://iwait.online/paper-submission-for-iwait-2026/
-- **논문 링크**: 
+- **논문 링크**: https://www.spiedigitallibrary.org/conference-proceedings-of-spie/14072/3101462/SkyPose--real-time-camera-pose-estimation-via-skyline-matching/10.1117/12.3101462.short
 
 > 논문 제목: *SkyPose: Real-Time Camera Pose Estimation via Skyline Matching in Mountainous Terrain*
 
